@@ -41,7 +41,7 @@ gulp.task('js', function() {
 // 开启监控，当这些文件变化时自动执行任务
 gulp.task('watch', function() {
     gulp.watch(game + '/css/*.less', ['less']);
-    gulp.watch(game + '/js/*.js', ['js']);
+    //gulp.watch(game + '/js/*.js', ['js']);
 });
 
 // 默认执行所有任务

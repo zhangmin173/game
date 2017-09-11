@@ -1,4 +1,42 @@
 * {
 	padding: 0;
 	margin: 0;
+	box-sizing: border-box;
+}
+body {
+	position: relative;
+}
+
+// 变量
+@top: 20px;
+@w: 30px;
+
+.main {
+	position: relative;
+	width: @w * 16;
+	height: auto;
+	margin: @top auto;
+}
+
+.game,.preview {
+	position: absolute;
+
+	span {
+		float: left;
+		box-sizing: border-box;
+		display: inline-block;
+		border: 1px solid #ddd;
+	}
+}
+
+.game {
+	left: 0;
+	width: @w * 10;
+	height: @w * 20;
+}
+
+.preview {
+	right: 0;
+	width: @w * 4;
+	height: @w * 4;
 }

@@ -1,1 +1,1 @@
-*{padding:0;margin:0}
+*{padding:0;margin:0;-webkit-box-sizing:border-box;box-sizing:border-box}body{position:relative}.main{position:relative;width:480px;height:auto;margin:20px auto}.game,.preview{position:absolute}.game span,.preview span{float:left;-webkit-box-sizing:border-box;box-sizing:border-box;display:inline-block;border:1px solid #ddd}.game{left:0;width:300px;height:600px}.preview{right:0;width:120px;height:120px}
