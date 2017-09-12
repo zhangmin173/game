@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatable" content="IE=edge">
+	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+	<title>省市区后台联动选择</title>
+	<style>
+		/* 多选框 */
+		.m-checkbox {
+			position: relative;
+			box-sizing: border-box;
+			height: 20px;
+			line-height: 20px;
+		}
+		.m-checkbox > input {
+			position: absolute;
+	        z-index: 1;
+	        left: 0;
+	        top: 0;
+	        display: block;
+	        width: 100%;
+	        height: 100%;
+	        opacity: 0;
+		}
+		.m-checkbox > input + label {
+			position: relative;
+            z-index: 0;
+            display: block;
+            padding: 0 0 0 25px;
+            font-size: 16px;
+		}
+		.m-checkbox > input + label:before,.m-checkbox > input + label:after {
+            position: absolute;
+            display: flex;
+            content: '';
+        }
+		.m-checkbox > input + label:before {
+            left: 5px;
+            top: 3px;
+            width: 12px;
+            height: 12px;
+            border: 1px solid #d81e06;
+        }
+
+        .m-checkbox > input + label:after {
+            left: 10px;
+            top: 6px;
+            width: 4px;
+            height: 6px;
+            border-style: solid;
+            border-width: 0 1px 1px 0;
+            border-color: transparent;
+            transition: border-color .3s;
+            transform: rotate(30deg);
+         }
+
+        .m-checkbox > input:checked+label:after {
+            border-color: #d81e06;
+        }
+        .m-checkbox.mdisabled .cityname {
+			color: #ddd;
+		}
+        .mdisabled > input + label:before {
+            border-color: #ddd;
+        }
+        .mdisabled > input:checked+label:after {
+            border-color: #ddd;
+        }
+        .m-checkbox span {
+        	display: inline-block;
+        	position: absolute;
+			z-index: 2;
+			top: 0;
+			right: 20px;
+			height: 20px;
+			color: #f00;
+		}
+		.m-checkbox .arrow {
+			display: inline-block;
+			position: absolute;
+			z-index: 2;
+			top: 0;
+			right: 0;
+			width: 20px;
+			height: 20px;
+			background-size: 20px;
+			cursor: pointer;
+		}
+		.m-checkbox .arrow.down {
+			background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAmUlEQVRYR+2VsQ2AIBBF75yAKagdSWsqN7Gh1pGsnYIJPENhYzTcYUFMPg0Fl/svLz+BqfHhxvkEABiAARiAgX8YcHHvmXkmItH+HSIypeC30rzagIv70DEvpYX5/RAZU/CrZlYNkJdpICzheacJoARhDa8CeIOoCa8GuEPUhn8CuCDyrS3cUynNHdA02zIDABiAARiAgeYGTlBHNSGBiFHiAAAAAElFTkSuQmCC');
+		}
+		.m-checkbox .arrow.up {
+			background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAnElEQVRYR+3UsQmAMBCF4TtQa0cwG7iC41g6iaXjuIIbxBFSqxCJYCNILpcizbMVfR8/JEyFHy68TwCgAAqgAApkFWhn24ar3E3Gaa90NSCMc3OuYdgf9aBFqADvODP3D8D7TYtIBnzH3/RaRBLgbzwHIQbExrUIEUA6rkHIAIvtiK4u7ahVuxvNHvtGBIj9JOc9ACiAAiiAAsUL3HvVTiGBliUHAAAAAElFTkSuQmCC');
+		}
+		/* 选择区域 */
+		.m-region {
+			position: relative;
+			box-sizing: border-box;
+			width: 800px;
+			height: 800px;
+			overflow-y: auto;
+			padding: 10px;
+			background-color: #f2f2f2;
+		}
+		.m-region-btns a {
+			display: inline-block;
+			text-decoration: none;
+			color: #333;
+			margin-bottom: 5px;
+		}
+		.m-region-box {
+			display: flex;
+		}
+		.m-region-box-left {
+			width: 100px;
+			padding-top: 5px;
+		}
+		.m-region-box-right {
+			flex: 1;
+		}
+
+		.m-region-city {
+			position: relative;
+			float: left;
+			width: 25%;
+			box-sizing: border-box;
+			padding: 5px 5px 20px;
+		}
+		.m-region-city.active {
+			background-color: #fff;
+		}
+		.m-region-city .checkbox {
+			
+		}
+		.m-region-area {
+			position: absolute;
+			left: 0;
+			width: 100%;
+			padding-left: 5px;
+			padding-right: 5px;
+			box-sizing: border-box;
+			top: 30px;
+			z-index: 99;
+			display: none;
+			background-color: #fff;
+		}
+		.m-region-area.active {
+			display: block;
+		}
+		.m-region-area .checkbox {
+			display: inline-block;
+			width: 50%;
+			float: left;
+		}
+		.m-region-area .close-aera {
+			text-decoration: none;
+			font-size: 12px;
+			color: #555;
+		}
+		.m-region-city .cityname {
+			font-size: 14px;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+		.m-region-area .cityname {
+			font-size: 8px;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+		.m-region-btns {
+			position: fixed;
+			right: 0;
+			bottom: 0;
+			width: 100%;
+			box-sizing: border-box;
+			padding: 10px;
+			text-align: right;
+		}
+	</style>
+</head>
+<body>
+	<div id="MyVue" class="m-region">
+<!-- 		<div class="m-region-btns">
+			<a href="javascript:;">全选</a>
+			<a href="javascript:;">反选</a>
+		</div> -->
+		<div v-for="(item,pid) in regionList" class="m-region-box">
+			<div class="m-region-box-left">
+				<div class="m-checkbox">
+					<input type="checkbox" name="province" :id="item.id" :value="item.id" v-model="selected" :data-pid="pid" @click="selectProvince">
+					<label :for="item.id">${item.name}</label>
+				</div>
+			</div>
+			<div class="m-region-box-right">
+				<div v-for="(parent,index) in item.child" class="m-region-city" :class="{ active: parent.isShow }">
+					<div class="m-checkbox" :class="{ disabled: parent.isFailed }">
+						<input type="checkbox" name="city" :value="parent.id" :data-index="index" :data-pid="pid" v-model="selected" @click="selectCity">
+						<label class="cityname">${parent.name}<span v-if="parent.childNum">(${parent.childNum})</span></label>
+						<label class="arrow" @click="chengeArea" :data-index="index" :data-pid="pid" :class="[parent.isShow ? 'up' : 'down']"></label>
+					</div>
+					<div class="m-region-area" :class="{ active: parent.isShow }">
+						<div v-for="(child,i) in parent.child" class="m-checkbox">
+							<input type="checkbox" name="area" :id="child.id" :value="child.id" :data-index="index" :data-pid="pid" :data-i="i" :checked="child.isSelected" v-model="selected" @click="selectArea">
+							<label class="cityname" :for="child.id">${child.name}</label>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="m-region-btns">
+			<button type="button" @click="confirm">确定</button>
+		</div>
+	</div>
+	<script src="https://cdn.bootcss.com/vue/2.4.2/vue.min.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<script>
+		var citys = [];
+		//var selected = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
+		var selected = [45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69];
+
+		$.ajaxSettings.async = false; 
+		$.getJSON('json/citys.json',function(res) {
+			citys = res;
+		},false);
+
+		initData();
+		function initData() {
+			for (var i = 0,len = citys.length; i < len; i++) {
+				citys[i].isSelected = false;
+				if ($.inArray(citys[i].id,selected) !== -1) {
+					citys[i].isSelected = true;
+					for (var j = 0,items = citys[i].child,le = items.length; j < le; j++) {
+						citys[i].child[j].isShow = false;
+						citys[i].child[j].isSelected = true;
+						
+						citys[i].child[j].childNum = citys[i].child[j].child.length;
+						for (var k = 0,item = citys[i].child[j].child,l = item.length; k < l; k++) {
+							citys[i].child[j].child[k].isSelected = true;
+						}
+					}
+				} else {
+					for (var j = 0,items = citys[i].child,le = items.length; j < le; j++) {
+						citys[i].child[j].isShow = false;
+						citys[i].child[j].isSelected = false;
+						if ($.inArray(citys[i].child[j].id,selected) !== -1) {
+							citys[i].child[j].isSelected = true;
+							citys[i].child[j].childNum = citys[i].child[j].child.length;
+							for (var k = 0,item = citys[i].child[j].child,l = item.length; k < l; k++) {
+								citys[i].child[j].child[k].isSelected = true;
+							}
+						} else {
+							var childNum = 0;
+							for (var k = 0,item = citys[i].child[j].child,l = item.length; k < l; k++) {
+								citys[i].child[j].child[k].isSelected = false;
+								if ($.inArray(citys[i].child[j].child[k].id,selected) !== -1) {
+									citys[i].child[j].child[k].isSelected = true;
+									childNum ++;
+								}
+							}
+							citys[i].child[j].childNum = childNum;
+						}
+						
+					}
+				}
+			}
+		};
+
+		var vm = new Vue({
+			delimiters: ['${', '}'],
+			el: '#MyVue',
+			methods: {
+				// 点击省份
+				selectProvince: function(e) {
+					var	pid = e.target.dataset.pid,
+						newValue = this.regionList,
+						selected = this.selected;
+
+					newValue[pid].isSelected = !newValue[pid].isSelected;
+
+					// 控制市 和 区
+					if (newValue[pid].isSelected) {
+						for (var i = 0,length = newValue[pid].child.length; i < length; i++) {
+							if (newValue[pid].child[i].isSelected == false) {
+								newValue[pid].child[i].isSelected = true;
+								selected.push(newValue[pid].child[i].id);
+								newValue[pid].child[i].childNum = newValue[pid].child[i].child.length;
+							}
+							for (var j = 0,len = newValue[pid].child[i].child.length; j < len; j++) {
+								if (newValue[pid].child[i].child[j].isSelected == false) {
+									newValue[pid].child[i].child[j].isSelected = true;
+									selected.push(newValue[pid].child[i].child[j].id);
+								}
+							}
+						}
+					} else {
+						for (var i = 0,length = newValue[pid].child.length; i < length; i++) {
+							newValue[pid].child[i].isSelected = false;
+							newValue[pid].child[i].childNum = 0;
+							for (var j = 0,len = newValue[pid].child[i].child.length; j < len; j++) {
+								newValue[pid].child[i].child[j].isSelected = false;
+							}
+						}
+						selected = [];
+					}
+					console.log(selected)
+					this.selected = selected;
+					this.regionList = newValue;
+				},
+				// 点击城市
+				selectCity: function(e) {
+					var index = e.target.dataset.index,
+						pid = e.target.dataset.pid,
+						newValue = this.regionList,
+						selected = this.selected;
+
+					newValue[pid].child[index].isSelected = !newValue[pid].child[index].isSelected;
+					if (newValue[pid].child[index].isSelected) {
+						newValue[pid].child[index].childNum = newValue[pid].child[index].child.length;
+					} else {
+						newValue[pid].child[index].childNum = 0;
+					}
+					// 控制区的选择 ok
+					for (var k = 0,len = newValue[pid].child[index].child.length; k < len; k++) {
+						if (newValue[pid].child[index].isSelected) {
+							if ($.inArray(newValue[pid].child[index].child[k].id,selected) == -1) {
+								selected.push(newValue[pid].child[index].child[k].id);
+							}
+							newValue[pid].child[index].child[k].isSelected = true;
+						} else {
+							for (var j = 0; j < selected.length; j++) {
+								if (selected[j] == newValue[pid].child[index].child[k].id) {
+									selected.splice(j,1);
+								}
+							}
+							newValue[pid].child[index].child[k].isSelected = false;
+						}
+					}
+					console.log(selected)
+					// 如果市全选，则省份选中
+					var num = 0;
+					for (var j = 0,len = newValue[pid].child.length; j < len; j++) {
+						if (newValue[pid].child[j].isSelected) {
+							num ++;
+						}
+					}
+					if (newValue[pid].child.length > 0 && newValue[pid].child.length == num) {
+						if (newValue[pid].isSelected == false) {
+							newValue[pid].isSelected = true;
+							selected.push(newValue[pid].id);
+						}
+					} else {
+						if (newValue[pid].isSelected) {
+							newValue[pid].isSelected = false;
+							for (var i = 0,len = selected.length; i < len; i++) {
+								if (selected[i] == newValue[pid].id) {
+									selected.splice(i,1);
+								}
+							}
+						}
+					}
+					this.selected = selected;
+					this.regionList = newValue;
+				},
+				// 点击区域
+				selectArea: function(e) {
+					var index = e.target.dataset.index,
+						pid = e.target.dataset.pid,
+						i = e.target.dataset.i,
+						newValue = this.regionList,
+						selected = this.selected;
+
+					newValue[pid].child[index].child[i].isSelected = !newValue[pid].child[index].child[i].isSelected;
+					if (newValue[pid].child[index].child[i].isSelected) {
+						newValue[pid].child[index].childNum ++;
+						selected.push(newValue[pid].child[index].child[i].id);
+					} else {
+						newValue[pid].child[index].childNum --;
+						for (var k = 0,len = selected.length; k < len; k++) {
+							if (selected[k] == newValue[pid].child[index].child[i].id) {
+								selected.splice(k,1);
+							}
+						}
+					}
+					// 判断一下区是不是全选
+					var num = 0;
+					for (var k = 0,len = newValue[pid].child[index].child.length; k < len; k++) {
+						if (newValue[pid].child[index].child[k].isSelected) {
+							num ++;
+						}
+					}
+					if (newValue[pid].child[index].child.length > 0 && num == newValue[pid].child[index].child.length) {
+						if (newValue[pid].child[index].isSelected) {
+
+						} else {
+							newValue[pid].child[index].isSelected = true;
+							selected.push(newValue[pid].child[index].id);
+
+							// 判断一下市是不是全选，控制省份的选择
+							var n = 0;
+							for (var kk = 0,len = newValue[pid].child.length; kk < len; kk++) {
+								if (newValue[pid].child[kk].isSelected) {
+									n ++;
+								}
+							}
+							if (n == newValue[pid].child.length) {
+								if (newValue[pid].isSelected == false) {
+									newValue[pid].isSelected = true;
+									selected.push(newValue[pid].id);
+								}
+							}
+
+						}
+						
+					} else if (newValue[pid].child[index].child.length > 0 && num != newValue[pid].child[index].child.length) {
+						if (newValue[pid].child[index].isSelected) {
+							newValue[pid].child[index].isSelected = false;
+							for (var ii = 0; ii < selected.length; ii++) {
+								if (selected[ii] == newValue[pid].child[index].id) {
+									selected.splice(ii,1)
+								}
+							}
+							// 只要有一个市没有选择，取消省份选择
+							newValue[pid].isSelected = false;
+							for (var jj = 0,len = selected.length; jj < len; jj++) {
+								if (selected[jj] == newValue[pid].id) {
+									selected.splice(jj,1)
+								}
+							}
+						} else {
+
+						}
+					}
+					this.selected = selected;
+					this.regionList = newValue;
+				},
+				// 点击确定
+				confirm: function() {
+					console.log('-----选中的省市区-----')
+					console.log(this.selected)
+
+					var citys = this.regionList,
+						selected = this.selected,
+						names = [],
+						provinceId = [],
+						cityId = [],
+						areaId = [];
+
+					for (var i = 0,length = citys.length; i < length; i++) {
+						if ($.inArray(citys[i].id,selected) !== -1) {
+							names.push(citys[i].name);
+						}
+						for (var j = 0,len = citys[i].child.length; j < len; j++) {
+							if ($.inArray(citys[i].id,selected) == -1) {
+								if ($.inArray(citys[i].child[j].id,selected) !== -1) {
+									names.push(citys[i].child[j].name);
+								}
+							}
+							for (var k = 0,l = citys[i].child[j].child.length; k < l; k++) {
+								if ($.inArray(citys[i].id,selected) == -1) {
+									if ($.inArray(citys[i].child[j].id,selected) == -1) {
+										if ($.inArray(citys[i].child[j].child[k].id,selected) !== -1) {
+											names.push(citys[i].child[j].child[k].name);
+										}
+									}
+								}
+							}
+						}
+					}
+					console.log(names);
+				},
+				// 切换下拉框
+				chengeArea: function (e) {
+					var index = e.target.dataset.index,
+						pid = e.target.dataset.pid;
+
+					for (var i = 0,length = this.regionList.length; i < length; i++) {
+						for (var j = 0,len = this.regionList[i].child.length; j < len; j++) {
+							if (j == index && i == pid) {
+								this.regionList[i].child[j].isShow = !this.regionList[pid].child[index].isShow;
+							} else {
+								this.regionList[i].child[j].isShow = false
+							}
+						}
+					}
+					
+				}
+			},
+			watch: {
+				// 监听选中的ID数组
+				selected: {
+					handler(newValue,oldValue) {
+						//console.log(newValue)
+					},
+					deep: true
+				}
+			},
+			data: {
+				selected: selected, // 选中的Id
+				regionList: citys // 原始数据
+			}
+		})
+	</script>
+</body>
+</html>
